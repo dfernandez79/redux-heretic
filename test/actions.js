@@ -2,12 +2,14 @@ const test = require('ava');
 const isFunction = require('lodash/isFunction');
 const h = require('..');
 
-test('Action type', t => {
+test('Action type names', t => {
   const {actions} = h({
-    someAction() {}
+    someAction() {},
+    myOtherAction() {}
   });
 
   t.is(actions.someAction.type, 'SOME_ACTION');
+  t.is(actions.myOtherAction.type, 'MY_OTHER_ACTION');
 });
 
 test('Action factory', t => {
@@ -36,4 +38,19 @@ test('Action with prefix', t => {
   );
 
   t.is(actions.someAction.type, 'TEST_SOME_ACTION');
+});
+
+test('Custom action factory', t => {
+  const {actions} = h({
+    someAction: {
+      create(type) {
+        return {type, custom: true};
+      }
+    }
+  });
+
+  t.deepEqual(
+    {type: actions.someAction.type, custom: true},
+    actions.someAction()
+  );
 });

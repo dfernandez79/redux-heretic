@@ -12,24 +12,50 @@ function actionTypeName(prefix = '', name) {
 }
 
 function actionFactory(type, spec) {
-  if (isObject(spec) && isFunction(spec.createAction)) {
-    return payload => spec.createAction(type, payload);
+  if (isObject(spec) && isFunction(spec.create)) {
+    return (...args) => spec.create(type, ...args);
   }
   return payload => defaultCreateAction(type, payload);
+}
+
+function createReducer(spec) {
+  if (isFunction(spec)) {
+    return spec;
+  } else if (isObject(spec) && isFunction(spec.reduce)) {
+    return spec.reduce;
+  }
+  return undefined;
 }
 
 function h(spec, prefix = '') {
   const names = Object.keys(spec);
   const actions = {};
+  const reducers = {};
 
   for (const name of names) {
     const type = actionTypeName(prefix, name);
-    actions[name] = actionFactory(type, spec[name]);
+    const currentSpec = spec[name];
+    const reducer = createReducer(currentSpec);
+
+    actions[name] = actionFactory(type, currentSpec);
     actions[name].type = type;
+
+    if (reducer) {
+      reducers[type] = reducer;
+    }
   }
 
+  const reducer = (state, action) => {
+    const fn = reducers[action.type];
+    if (isFunction(fn)) {
+      return fn(state, action);
+    }
+    return state;
+  };
+
   return {
-    actions
+    actions,
+    reducer
   };
 }
 
