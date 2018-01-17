@@ -18,6 +18,6 @@
     "prettier": true
   },
   "dependencies": {
-    "lodash": "^4.17.4"
+    "lodash": ">= 3.0.0"
   }
 }

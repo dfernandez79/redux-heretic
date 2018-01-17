@@ -1,6 +1,41 @@
 const snakeCase = require('lodash/snakeCase');
 const isFunction = require('lodash/isFunction');
 const isObject = require('lodash/isObject');
+const isUndefined = require('lodash/isUndefined');
+
+function h(spec) {
+  const actions = {};
+  const reducers = {};
+
+  Object.keys(spec).forEach(name => {
+    if (!isSpecProperty(name)) {
+      const type = actionTypeName(spec.prefix, name);
+      const currentSpec = spec[name];
+
+      addAction(actions, name, type, currentSpec);
+      addReducer(reducers, type, currentSpec);
+    }
+  });
+
+  return {
+    actions,
+    reducer: composeReducers(reducers, spec.initialState)
+  };
+}
+
+module.exports = h;
+module.exports.default = h;
+
+function composeReducers(reducers, initialState) {
+  return (state, action) => {
+    state = isUndefined(state) ? initialState : state;
+    const fn = reducers[action.type];
+    if (isFunction(fn)) {
+      return fn(state, action);
+    }
+    return state;
+  };
+}
 
 function defaultCreateAction(type, payload) {
   return Object.assign({type}, payload);
@@ -11,11 +46,14 @@ function actionTypeName(prefix = '', name) {
   return `${pre}${snakeCase(name).toUpperCase()}`;
 }
 
-function actionFactory(type, spec) {
-  if (isObject(spec) && isFunction(spec.create)) {
+function createActionFactory(type, spec) {
+  const isObj = isObject(spec);
+  if (isObj && isFunction(spec.create)) {
     return (...args) => spec.create(type, ...args);
+  } else if (isFunction(spec) || (isObj && isFunction(spec.reduce))) {
+    return payload => defaultCreateAction(type, payload);
   }
-  return payload => defaultCreateAction(type, payload);
+  return undefined;
 }
 
 function createReducer(spec) {
@@ -27,37 +65,21 @@ function createReducer(spec) {
   return undefined;
 }
 
-function h(spec, prefix = '') {
-  const names = Object.keys(spec);
-  const actions = {};
-  const reducers = {};
-
-  for (const name of names) {
-    const type = actionTypeName(prefix, name);
-    const currentSpec = spec[name];
-    const reducer = createReducer(currentSpec);
-
-    actions[name] = actionFactory(type, currentSpec);
-    actions[name].type = type;
-
-    if (reducer) {
-      reducers[type] = reducer;
-    }
-  }
-
-  const reducer = (state, action) => {
-    const fn = reducers[action.type];
-    if (isFunction(fn)) {
-      return fn(state, action);
-    }
-    return state;
-  };
-
-  return {
-    actions,
-    reducer
-  };
+function isSpecProperty(name) {
+  return name === 'prefix' || name === 'initialState';
 }
 
-module.exports = h;
-module.exports.default = h;
+function addReducer(reducers, type, currentSpec) {
+  const reducer = createReducer(currentSpec);
+  if (reducer) {
+    reducers[type] = reducer;
+  }
+}
+
+function addAction(actions, name, type, currentSpec) {
+  const factory = createActionFactory(type, currentSpec);
+  if (factory) {
+    factory.type = type;
+    actions[name] = factory;
+  }
+}

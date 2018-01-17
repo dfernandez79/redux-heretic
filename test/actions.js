@@ -30,12 +30,10 @@ test('Use factory without payload', t => {
 });
 
 test('Action with prefix', t => {
-  const {actions} = h(
-    {
-      someAction() {}
-    },
-    'test'
-  );
+  const {actions} = h({
+    prefix: 'test',
+    someAction() {}
+  });
 
   t.is(actions.someAction.type, 'TEST_SOME_ACTION');
 });
@@ -53,4 +51,21 @@ test('Custom action factory', t => {
     {type: actions.someAction.type, custom: true},
     actions.someAction()
   );
+});
+
+test('Ignore non-functions', t => {
+  const result = h({x: 1});
+
+  t.is(result.actions.x, undefined);
+});
+
+test('Ignore objects without reduce and create', t => {
+  const result = h({object: {x: 1, y: 2}});
+  t.is(result.actions.object, undefined);
+});
+
+test('Create action for reducer', t => {
+  const result = h({some: {reduce: state => state}});
+
+  t.true(isFunction(result.actions.some));
 });
