@@ -3,7 +3,7 @@ const isFunction = require('lodash/isFunction');
 const isObject = require('lodash/isObject');
 
 function defaultCreateAction(type, payload) {
-  return {type, ...payload};
+  return Object.assign({type}, payload);
 }
 
 function actionTypeName(prefix = '', name) {
