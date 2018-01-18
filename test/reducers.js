@@ -43,7 +43,7 @@ test('Ignore undeclared reducer', t => {
 test('Use custom action factory', t => {
   const {actions, reducer} = h({
     add: {
-      create(type, value) {
+      create(type, actions, value) {
         return {type, value};
       },
       reduce(state, {value}) {

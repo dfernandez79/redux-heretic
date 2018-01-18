@@ -37,32 +37,9 @@ function composeReducers(reducers, initialState) {
   };
 }
 
-function defaultCreateAction(type, payload) {
-  return Object.assign({type}, payload);
-}
-
 function actionTypeName(prefix = '', name) {
   const pre = prefix.length === 0 ? '' : `${snakeCase(prefix).toUpperCase()}_`;
   return `${pre}${snakeCase(name).toUpperCase()}`;
-}
-
-function createActionFactory(type, spec) {
-  const isObj = isObject(spec);
-  if (isObj && isFunction(spec.create)) {
-    return (...args) => spec.create(type, ...args);
-  } else if (isFunction(spec) || (isObj && isFunction(spec.reduce))) {
-    return payload => defaultCreateAction(type, payload);
-  }
-  return undefined;
-}
-
-function createReducer(spec) {
-  if (isFunction(spec)) {
-    return spec;
-  } else if (isObject(spec) && isFunction(spec.reduce)) {
-    return spec.reduce;
-  }
-  return undefined;
 }
 
 function isSpecProperty(name) {
@@ -76,10 +53,33 @@ function addReducer(reducers, type, currentSpec) {
   }
 }
 
+function createReducer(spec) {
+  if (isFunction(spec)) {
+    return spec;
+  } else if (isObject(spec) && isFunction(spec.reduce)) {
+    return spec.reduce;
+  }
+  return undefined;
+}
+
 function addAction(actions, name, type, currentSpec) {
-  const factory = createActionFactory(type, currentSpec);
+  const factory = createActionFactory(type, actions, currentSpec);
   if (factory) {
     factory.type = type;
     actions[name] = factory;
   }
+}
+
+function createActionFactory(type, actions, spec) {
+  const isObj = isObject(spec);
+  if (isObj && isFunction(spec.create)) {
+    return (...args) => spec.create(type, actions, ...args);
+  } else if (isFunction(spec) || (isObj && isFunction(spec.reduce))) {
+    return payload => defaultCreateAction(type, payload);
+  }
+  return undefined;
+}
+
+function defaultCreateAction(type, payload) {
+  return Object.assign({type}, payload);
 }

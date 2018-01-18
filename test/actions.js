@@ -69,3 +69,24 @@ test('Create action for reducer', t => {
 
   t.true(isFunction(result.actions.some));
 });
+
+test('Pass other actions to the action factory', t => {
+  const {actions} = h({
+    oneAction(state) {
+      return state + 1;
+    },
+    otherAction: {
+      create(type, actions, payload) {
+        return Object.assign(
+          {type, otherType: actions.oneAction().type},
+          payload
+        );
+      }
+    }
+  });
+
+  t.deepEqual(
+    {type: 'OTHER_ACTION', otherType: 'ONE_ACTION', test: 123},
+    actions.otherAction({test: 123})
+  );
+});
