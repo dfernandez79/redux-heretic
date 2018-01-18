@@ -7,11 +7,11 @@ actions and reducers into the same definition 🙀.
 
 ### Counter
 
-In this example, each key of the object passed to redux-heretic contains a
+In this example, each key of the object passed to _redux-heretic_ contains a
 reducer function. The returned object has action factories and a reducer that
 will apply the state change based on the action type.
 
-Before:
+Plain [redux] code:
 
 ```js
 // Reducer
@@ -42,7 +42,7 @@ const store = Redux.createStore(counter);
 store.dispatch(increment());
 ```
 
-After:
+Using _redux-heretic_:
 
 ```js
 import h from 'redux-heretic';
@@ -66,7 +66,17 @@ the action factory and reducer.
 const {actions, reducer} = h({
   initialState: 0,
   add: {
+    // This will be used to create the action
+    // type & actions are values passed by the library:
+    // type = the action type, the library converts
+    // add to UPPERCASE_AND_SNAKE_CASE, e.g ADD
+    // actions = the same actions object returned by
+    // the h function, so you can access other actions.
+    // See the async example bellow.
     create: (type, actions, value) => ({type, amount: value}),
+
+    // This will be used to return the new state when
+    // the action is received
     reduce: (state, action) => state + action.amount
   }
 });
@@ -89,6 +99,7 @@ can pass a prefix, and all the action types will use it.
 ```js
 const {actions, reducer} = h({
   initialState: 0,
+  // every action type is prefixed with COUNTER_
   prefix: 'counter',
   increment: state => state + 1,
   decrement: state => state - 1
@@ -118,10 +129,13 @@ const {actions, reducer} = h({
   increment: {
     create(type, actions, payload) {
       return dispatch => {
+        // use the actions objects to easily create other actions,
+        // note that you can also hardcode {type: 'START_INCREMENT'}
         dispatch(actions.startIncrement());
         setTimeout(() => dispatch(actions.finishIncrement()), 1000);
       }
     }
+    // You can skip the reducer function if you don't want it
   },
 
   startIncrement(state) {
