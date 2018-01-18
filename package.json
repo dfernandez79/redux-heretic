@@ -1,6 +1,6 @@
 {
   "name": "redux-heretic",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Reduce boilerplate of Redux code.",
   "main": "index.js",
   "author": "Diego Fernandez <diegof79@gmail.com>",
