@@ -4,6 +4,10 @@
   "description": "Reduce boilerplate of Redux code.",
   "main": "index.js",
   "author": "Diego Fernandez <diegof79@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dfernandez79/redux-heretic.git"
+  },
   "license": "MIT",
   "private": false,
   "scripts": {
