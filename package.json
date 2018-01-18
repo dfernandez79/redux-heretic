@@ -7,7 +7,8 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "test": "xo --prettier && ava"
+    "lint": "xo",
+    "test": "ava"
   },
   "devDependencies": {
     "ava": "^0.24.0",
