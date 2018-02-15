@@ -1,25 +1,25 @@
-const snakeCase = require('lodash/snakeCase');
 const isFunction = require('lodash/isFunction');
 const isObject = require('lodash/isObject');
 const isUndefined = require('lodash/isUndefined');
 
-function h(spec) {
+const defaultTypeFormat = require('./typeformat');
+
+function h(spec, options = {}) {
   const actions = {};
   const reducers = {};
+  const typeFormat = options.typeFormat || defaultTypeFormat;
 
   Object.keys(spec).forEach(name => {
-    if (!isSpecProperty(name)) {
-      const type = actionTypeName(spec.prefix, name);
-      const currentSpec = spec[name];
+    const type = typeFormat(name, options.prefix);
+    const currentSpec = spec[name];
 
-      addAction(actions, name, type, currentSpec);
-      addReducer(reducers, type, currentSpec);
-    }
+    addAction(actions, name, type, currentSpec);
+    addReducer(reducers, type, currentSpec);
   });
 
   return {
     actions,
-    reducer: composeReducers(reducers, spec.initialState)
+    reducer: composeReducers(reducers, options.initialState)
   };
 }
 
@@ -35,15 +35,6 @@ function composeReducers(reducers, initialState) {
     }
     return state;
   };
-}
-
-function actionTypeName(prefix = '', name) {
-  const pre = prefix.length === 0 ? '' : `${snakeCase(prefix).toUpperCase()}_`;
-  return `${pre}${snakeCase(name).toUpperCase()}`;
-}
-
-function isSpecProperty(name) {
-  return name === 'prefix' || name === 'initialState';
 }
 
 function addReducer(reducers, type, currentSpec) {

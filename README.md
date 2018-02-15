@@ -47,11 +47,13 @@ Using _redux-heretic_:
 ```js
 import h from 'redux-heretic';
 
-const {actions, reducer} = h({
-  initialState: 0,
-  increment: state => state + 1,
-  decrement: state => state - 1
-});
+const {actions, reducer} = h(
+  {
+    increment: state => state + 1,
+    decrement: state => state - 1
+  },
+  {initialState: 0}
+);
 
 const store = Redux.createStore(reducer);
 store.dispatch(actions.increment());
@@ -63,23 +65,25 @@ You can pass a function used as a reducer, or you can use an object to specify
 the action factory and reducer.
 
 ```js
-const {actions, reducer} = h({
-  initialState: 0,
-  add: {
-    // This will be used to create the action
-    // type & actions are values passed by the library:
-    // type = the action type, the library converts
-    // add to UPPERCASE_AND_SNAKE_CASE, e.g ADD
-    // actions = the same actions object returned by
-    // the h function, so you can access other actions.
-    // See the async example bellow.
-    create: (type, actions, value) => ({type, amount: value}),
+const {actions, reducer} = h(
+  {
+    add: {
+      // This will be used to create the action
+      // type & actions are values passed by the library:
+      // type = the action type, the library converts
+      // add to UPPERCASE_AND_SNAKE_CASE, e.g ADD
+      // actions = the same actions object returned by
+      // the h function, so you can access other actions.
+      // See the async example bellow.
+      create: (type, actions, value) => ({type, amount: value}),
 
-    // This will be used to return the new state when
-    // the action is received
-    reduce: (state, action) => state + action.amount
-  }
-});
+      // This will be used to return the new state when
+      // the action is received
+      reduce: (state, action) => state + action.amount
+    }
+  },
+  {initialState: 0}
+);
 
 const store = Redux.createStore(reducer);
 
@@ -97,13 +101,18 @@ When combining reducers, you need to make sure that action types are unique. You
 can pass a prefix, and all the action types will use it.
 
 ```js
-const {actions, reducer} = h({
-  initialState: 0,
-  // every action type is prefixed with COUNTER_
-  prefix: 'counter',
-  increment: state => state + 1,
-  decrement: state => state - 1
-});
+const {actions, reducer} = h(
+  {
+    increment: state => state + 1,
+    decrement: state => state - 1
+  },
+  {
+    initialState: 0,
+
+    // every action type is prefixed with COUNTER_
+    prefix: 'counter'
+  }
+);
 
 console.log(actions.increment.type); // --> COUNTER_INCREMENT
 ```
@@ -121,11 +130,6 @@ import thunk from 'redux-thunk';
 import h from 'redux-heretic';
 
 const {actions, reducer} = h({
-  initialState: {
-    requestInProgress: false,
-    value: 0
-  },
-
   increment: {
     create(type, actions, payload) {
       return dispatch => {
@@ -149,6 +153,12 @@ const {actions, reducer} = h({
       requestInProgress: false,
       value: state.value + 1
     });
+  }
+},
+{  
+  initialState: {
+    requestInProgress: false,
+    value: 0
   }
 });
 

@@ -30,10 +30,12 @@ test('Use factory without payload', t => {
 });
 
 test('Action with prefix', t => {
-  const {actions} = h({
-    prefix: 'test',
-    someAction() {}
-  });
+  const {actions} = h(
+    {
+      someAction() {}
+    },
+    {prefix: 'test'}
+  );
 
   t.is(actions.someAction.type, 'TEST_SOME_ACTION');
 });
@@ -89,4 +91,18 @@ test('Pass other actions to the action factory', t => {
     {type: 'OTHER_ACTION', otherType: 'ONE_ACTION', test: 123},
     actions.otherAction({test: 123})
   );
+});
+
+test('Custom type name format', t => {
+  const {actions} = h(
+    {oneAction() {}},
+    {
+      prefix: 'a',
+      typeFormat(name, prefix) {
+        return `${name}/${prefix}`;
+      }
+    }
+  );
+
+  t.is(actions.oneAction.type, 'oneAction/a');
 });

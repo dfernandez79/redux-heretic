@@ -20,10 +20,12 @@ test('Ignore reducer for unknown actions', t => {
 });
 
 test('Use action prefix', t => {
-  const {reducer} = h({
-    prefix: 'prefix',
-    increment: (state = 0) => state + 1
-  });
+  const {reducer} = h(
+    {
+      increment: (state = 0) => state + 1
+    },
+    {prefix: 'prefix'}
+  );
 
   t.is(reducer(0, {type: 'PREFIX_INCREMENT'}), 1);
 });
@@ -56,24 +58,28 @@ test('Use custom action factory', t => {
 });
 
 test('Return the initial state when called with undefined', t => {
-  const {actions, reducer} = h({
-    initialState: 'INITIAL STATE',
-    update(state) {
-      return state;
-    }
-  });
+  const {actions, reducer} = h(
+    {
+      update(state) {
+        return state;
+      }
+    },
+    {initialState: 'INITIAL STATE'}
+  );
 
   t.is(reducer(undefined, {type: 'XYZ'}), 'INITIAL STATE');
   t.is(reducer(undefined, actions.update()), 'INITIAL STATE');
 });
 
 test('If state is undefined initialize with initial state', t => {
-  const {actions, reducer} = h({
-    initialState: 2,
-    add(state, {value}) {
-      return state + value;
-    }
-  });
+  const {actions, reducer} = h(
+    {
+      add(state, {value}) {
+        return state + value;
+      }
+    },
+    {initialState: 2}
+  );
 
   t.is(reducer(undefined, actions.add({value: 2})), 4);
 });
