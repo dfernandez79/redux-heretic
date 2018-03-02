@@ -7,11 +7,7 @@ actions and reducers into the same definition 🙀.
 
 ### Counter
 
-In this example, each key of the object passed to _redux-heretic_ contains a
-reducer function. The returned object has action factories and a reducer that
-will apply the state change based on the action type.
-
-Plain [redux] code:
+Plain [redux] counter example:
 
 ```js
 // Reducer
@@ -44,6 +40,10 @@ store.dispatch(increment());
 
 Using _redux-heretic_:
 
+Each key of the object passed to _redux-heretic_ contains a reducer function.
+The returned object has action factories and a reducer that will apply the state
+change based on the action type.
+
 ```js
 import h from 'redux-heretic';
 
@@ -61,8 +61,11 @@ store.dispatch(actions.increment());
 
 ### Custom action factory
 
-You can pass a function used as a reducer, or you can use an object to specify
-the action factory and reducer.
+Each value in the object passed to _redux-heretic_ accepts a function or an
+object.
+
+The function variant specifies a reducer. The object variant allows to pass an
+action factory and/or a reducer.
 
 ```js
 const {actions, reducer} = h(
@@ -70,8 +73,10 @@ const {actions, reducer} = h(
     add: {
       // This will be used to create the action
       // type & actions are values passed by the library:
-      // type = the action type, the library converts
-      // add to UPPERCASE_AND_SNAKE_CASE, e.g ADD
+      //
+      // type = the action type, by default the library converts
+      // 'add' to UPPER_SNAKE_CASE, e.g ADD
+      //
       // actions = the same actions object returned by
       // the h function, so you can access other actions.
       // See the async example bellow.
@@ -164,6 +169,39 @@ const {actions, reducer} = h({
 
 const store = Redux.createStore(reducer, applyMiddleware(thunk));
 store.dispatch(actions.increment());
+```
+
+### Custom action type names
+
+By default, action names have the format: `PREFIX_ACTION_NAME`.
+
+For example `startIncrement` with the prefix `counter`, becomes
+`COUNTER_START_INCREMENT`.
+
+To change the format pass a `typeFormat` function to the options:
+
+```js
+import h from 'redux-heretic';
+
+const {actions, reducer} = h(
+  {
+    startIncrement(state) {
+      return Object.assign({}, state, {
+        requestInProgress: true
+      });
+    }
+  },
+  {
+    initialState: {
+      requestInProgress: false
+    },
+    prefix: 'a',
+    typeFormat: (name, prefix) => `${name}/${prefix}`
+  }
+);
+
+console.log(actions.startIncrement.type);
+// shows: startIncrement/a
 ```
 
 # License
