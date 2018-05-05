@@ -80,7 +80,7 @@ test('Pass other actions to the action factory', t => {
     otherAction: {
       create(type, actions, payload) {
         return Object.assign(
-          {type, otherType: actions.oneAction().type},
+          {type, otherType: actions.oneAction.type},
           payload
         );
       }

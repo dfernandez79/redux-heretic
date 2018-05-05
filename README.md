@@ -204,9 +204,126 @@ console.log(actions.startIncrement.type);
 // shows: startIncrement/a
 ```
 
+### Non 1-1 relationship between action-reducer
+
+Redux Heretic makes easy to create a 1-1 relationship between action and
+reducer. But, [actions are not necessarily related to one reducer][action-rel].
+Is possible to define only action factories using `create`:
+
+```js
+const {actions} = h(
+  {
+    increment: {
+      create(type, actions, payload) {
+        return dispatch => {
+          dispatch(startIncrement());
+          setTimeout(() => dispatch(finishIncrement()), 1000);
+        };
+      }
+    }
+  },
+  {
+    prefix: 'counter'
+  }
+);
+
+// we only care of action factories
+export default actions;
+```
+
+In that case, the library also helps to reduce the amount of boilerplate code
+using the `actionFactories` helper:
+
+```js
+import {actionFactories} from 'redux-heretic/helpers';
+
+export default actionFactories(
+  {
+    increment(type, actions, payload) {
+      return dispatch => {
+        dispatch(startIncrement());
+        setTimeout(() => dispatch(finishIncrement()), 1000);
+      };
+    }
+  },
+  'counter'
+);
+```
+
+> **Heads up!** Note the `/helpers` module path.
+
+But what about reducers? Do I need to code the usual `switch` statement to
+handle an action defined elsewhere?
+
+You can use Redux Heretic for that too, but it's a little bit verbose:
+
+```js
+const {reducer} = h(
+  {
+    [myActionFactory.type]: {
+      reduce(state, action) {
+        // ...
+        return {...state /* ... */};
+      }
+    }
+  },
+  {
+    typeFormat: name => name
+  }
+);
+export default reducer;
+```
+
+For those cases the library provides the handy `reducer` function:
+
+```js
+import {reducer} from 'redux-heretic/helpers';
+export default reducer({
+  [myActionFactory.type]: (state, action) => {
+    // ...
+    return {...state /* ... */};
+  }
+});
+```
+
+### Reducing boilerplate code of action factories
+
+The previous section describes how to write less code when creating action
+factories without a reducer. If your action factories are dumb, you can reduce
+the amount of code even more with the helpers `defaultActionFactory` and
+`defaultActionFactories`.
+
+Before:
+
+```js
+import {actionFactories} from 'redux-heretic/helpers';
+export default actionFactories({
+  dumbAction: (type, actions, payload) => ({type, ...payload})
+});
+```
+
+With `defaultActionFactory`:
+
+```js
+import {actionFactories, defaultActionFactory} from 'redux-heretic/helpers';
+export default actionFactories({
+  dumbAction: defaultActionFactory
+});
+```
+
+Using `defaultActionFactories`:
+
+```js
+import {actionFactories, defaultActionFactories} from 'redux-heretic/helpers';
+export default actionFactories(
+  defaultActionFactories('dumbAction1', 'dumbAction2', 'dumbAction3')
+);
+```
+
 # License
 
 MIT
 
 [redux]: https://redux.js.org/
 [redux-thunk]: https://github.com/gaearon/redux-thunk
+[action-rel]: https://redux.js.org/faq/actions#is-there-always-a-one-to-one-mapping-between-reducers-and-actions
