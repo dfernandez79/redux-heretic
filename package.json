@@ -16,14 +16,14 @@
     "test": "ava"
   },
   "devDependencies": {
-    "ava": "^0.24.0",
-    "xo": "^0.18.2"
+    "ava": "^2.4.0",
+    "xo": "^0.25.3"
   },
   "xo": {
     "space": true,
     "prettier": true
   },
   "dependencies": {
-    "lodash": ">= 3.0.0"
+    "lodash": "^4.17.15"
   }
 }
